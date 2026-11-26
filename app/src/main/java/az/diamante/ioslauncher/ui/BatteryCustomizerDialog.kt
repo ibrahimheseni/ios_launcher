@@ -6,6 +6,9 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -45,8 +48,6 @@ val PREMIUM_BATTERY_BADGES = listOf(
     PremiumBadge("fire", "Alov", "🔥", false, Color(0xFFFF453A))
 )
 
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 
 /**
  * Premium Batareya Mini İkon & Şarj Animasiyası Seçim Pəncərəsi
