@@ -10,24 +10,31 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Kodu Yüklə
+    - name: Checkout Code
       uses: actions/checkout@v4
 
-    - name: Java 17 Quraşdır
+    - name: Set up JDK 17
       uses: actions/setup-java@v4
       with:
         java-version: '17'
         distribution: 'temurin'
+        cache: gradle
 
-    - name: Gradle ilə APK Hazırla
+    - name: Setup Android SDK
+      uses: android-actions/setup-android@v3
+
+    - name: Accept Licenses
+      run: yes | sdkmanager --licenses || true
+
+    - name: Setup Gradle
       uses: gradle/actions/setup-gradle@v4
       with:
         gradle-version: '8.10.2'
 
-    - name: APK Yığ
+    - name: Build APK
       run: gradle assembleDebug --stacktrace
 
-    - name: APK Faylını Yükləməyə Hazırla
+    - name: Upload APK Artifact
       uses: actions/upload-artifact@v4
       with:
         name: iOS-18-Launcher-AdFree
