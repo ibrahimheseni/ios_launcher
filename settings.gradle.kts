@@ -14,4 +14,4 @@ dependencyResolutionManagement {
 }
 
 rootProject.name = "iOSLauncher"
-include ':app'
+include(":app")
