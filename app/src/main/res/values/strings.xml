@@ -1,0 +1,14 @@
+<resources>
+    <string name="app_name">iOS 18 Launcher</string>
+    <string name="search_hint">Axtarış...</string>
+    <string name="hidden_apps_title">Gizlədilmiş Tətbiqlər</string>
+    <string name="edit_app">Tətbiqi redaktə et</string>
+    <string name="hide_app">Tətbiqi gizlət</string>
+    <string name="unhide_app">Gizlilikdən çıxar</string>
+    <string name="save">Yadda saxla</string>
+    <string name="cancel">Ləğv et</string>
+    <string name="change_icon">İkonu dəyiş</string>
+    <string name="app_name_label">Tətbiq adı</string>
+    <string name="enter_pin">PIN kodu daxil edin</string>
+    <string name="wrong_pin">PIN kod yalnışdır</string>
+</resources>
