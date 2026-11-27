@@ -30,6 +30,8 @@ fun EditAppBottomSheet(
     app: AppModel,
     onDismiss: () -> Unit,
     onSave: (newName: String?, newIconUri: String?) -> Unit,
+    onMoveLeft: () -> Unit = {},
+    onMoveRight: () -> Unit = {},
     onHide: () -> Unit,
     onReset: () -> Unit
 ) {
@@ -96,6 +98,31 @@ fun EditAppBottomSheet(
                     text = if (selectedIconUri != null) "İkon Seçildi (Dəyiş)" else "Qalereyadan İkon Seç",
                     color = Color.White
                 )
+            }
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            // Yeri Dəyiş (Sola / Sağa apar)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                Button(
+                    onClick = onMoveLeft,
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2C2C2E)),
+                    shape = RoundedCornerShape(14.dp),
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text("⬅️ Sola apar", color = Color.White, fontSize = 13.sp)
+                }
+                Button(
+                    onClick = onMoveRight,
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2C2C2E)),
+                    shape = RoundedCornerShape(14.dp),
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text("Sağa apar ➡️", color = Color.White, fontSize = 13.sp)
+                }
             }
 
             Spacer(modifier = Modifier.height(10.dp))
