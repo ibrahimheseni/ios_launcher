@@ -2,6 +2,7 @@ package az.diamante.ioslauncher
 
 import android.app.KeyguardManager
 import android.content.Context
+import android.content.Intent
 import android.os.Build
 import android.os.Bundle
 import android.view.WindowManager
@@ -10,9 +11,15 @@ import androidx.activity.compose.setContent
 import az.diamante.ioslauncher.ui.ChargingAnimationOverlay
 import az.diamante.ioslauncher.ui.ChargingStyle
 
+/**
+ * Telefon kiliddə olanda şarja taxıldıqda kilid ekranının üstündə açılan xüsusi animasiya
+ */
 class ChargingLockActivity : ComponentActivity() {
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // Kilid ekranının üstündə görünmə və ekranı yandırma parametrləri
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
             setShowWhenLocked(true)
             setTurnScreenOn(true)
@@ -25,9 +32,11 @@ class ChargingLockActivity : ComponentActivity() {
                 WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON
             )
         }
+
         val prefs = getSharedPreferences("ios_launcher_battery_prefs", Context.MODE_PRIVATE)
         val savedStyle = prefs.getString("charging_style", ChargingStyle.AZERBAIJAN_GERB.name)
         val style = ChargingStyle.valueOf(savedStyle ?: ChargingStyle.AZERBAIJAN_GERB.name)
+
         setContent {
             ChargingAnimationOverlay(
                 batteryLevel = 85,
