@@ -10,9 +10,13 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Image
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Tune
@@ -23,22 +27,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import az.diamante.ioslauncher.manager.AppManager
 import az.diamante.ioslauncher.model.AppModel
+import coil.compose.AsyncImage
 import kotlinx.coroutines.launch
 
-/**
- * Əsas iOS 18 Pro Ana Ekranı
- * Tam funksionallıq:
- * - Premium Batareya Nişanları (🇦🇿 Bayraq, centraldev.az, İbrahim Həsəni, Tank, Silah və s.)
- * - 5 Çeşidli Şarj Animasiyası (Apple Dynamic Island, Neon Vortex, Liquid Wave, Cyber Ring, Star)
- * - İdarəetmə Mərkəzi (Control Center)
- * - Jiggle Mode və Proqram Redaktəsi / Gizlətməsi
- */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun IOSHomeScreen(
@@ -54,9 +51,13 @@ fun IOSHomeScreen(
     var selectedAppForEdit by remember { mutableStateOf<AppModel?>(null) }
     var showHiddenVault by remember { mutableStateOf(false) }
     var showControlCenter by remember { mutableStateOf(false) }
+    var showWallpaperSelector by remember { mutableStateOf(false) }
     var isJiggleMode by remember { mutableStateOf(false) }
 
-    // Premium Batareya Nişanı Vəziyyəti
+    var selectedWallpaperUri by remember {
+        mutableStateOf(prefs.getString("selected_wallpaper_uri", null))
+    }
+
     val defaultBadge = PREMIUM_BATTERY_BADGES.first { it.id == "az_flag" }
     var activeBadge by remember {
         val savedId = prefs.getString("battery_badge_id", "az_flag")
@@ -87,18 +88,16 @@ fun IOSHomeScreen(
         allApps.filter { it.isHidden }
     }
 
-    val backgroundBrush = Brush.verticalGradient(
-        colors = listOf(
-            Color(0xFF0D1B2A),
-            Color(0xFF1B263B),
-            Color(0xFF415A77)
-        )
-    )
+    val appsPerPage = 20
+    val pages = remember(visibleApps) {
+        if (visibleApps.isEmpty()) listOf(emptyList())
+        else visibleApps.chunked(appsPerPage)
+    }
+    val pagerState = rememberPagerState(pageCount = { pages.size.coerceAtLeast(1) })
 
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(backgroundBrush)
             .statusBarsPadding()
             .navigationBarsPadding()
             .combinedClickable(
@@ -106,16 +105,37 @@ fun IOSHomeScreen(
                 onLongClick = { isJiggleMode = true }
             )
     ) {
-        Column(modifier = Modifier.fillMaxSize()) {
+        if (selectedWallpaperUri != null) {
+            AsyncImage(
+                model = selectedWallpaperUri,
+                contentDescription = "Wallpaper",
+                contentScale = ContentScale.Crop,
+                modifier = Modifier.fillMaxSize()
+            )
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Black.copy(alpha = 0.25f))
+            )
+        } else {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(
+                        Brush.verticalGradient(
+                            listOf(Color(0xFF0D1B2A), Color(0xFF1B263B), Color(0xFF415A77))
+                        )
+                    )
+            )
+        }
 
-            // Üst iOS Paneli
+        Column(modifier = Modifier.fillMaxSize()) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp, vertical = 8.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Axtarış Kapsulu
                 Row(
                     modifier = Modifier
                         .weight(1f)
@@ -125,21 +145,12 @@ fun IOSHomeScreen(
                         .padding(horizontal = 12.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Icon(
-                        Icons.Default.Search,
-                        contentDescription = "Axtar",
-                        tint = Color.White.copy(alpha = 0.8f),
-                        modifier = Modifier.size(18.dp)
-                    )
+                    Icon(Icons.Default.Search, contentDescription = "Axtar", tint = Color.White.copy(alpha = 0.8f), modifier = Modifier.size(18.dp))
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = "Axtarış",
-                        color = Color.White.copy(alpha = 0.7f),
-                        fontSize = 14.sp
-                    )
+                    Text(text = "Axtarış", color = Color.White.copy(alpha = 0.7f), fontSize = 14.sp)
                 }
 
-                Spacer(modifier = Modifier.width(10.dp))
+                Spacer(modifier = Modifier.width(8.dp))
 
                 if (isJiggleMode) {
                     Button(
@@ -150,10 +161,22 @@ fun IOSHomeScreen(
                     ) {
                         Icon(Icons.Default.Check, contentDescription = null, tint = Color.White, modifier = Modifier.size(16.dp))
                         Spacer(modifier = Modifier.width(4.dp))
-                        Text("Bitti", color = Color.White, fontSize = 13.sp, fontWeight = FontWeight.Bold)
+                        Text("Bitti", color = Color.White, fontSize = 13.sp)
                     }
                 } else {
-                    // Control Center
+                    Box(
+                        modifier = Modifier
+                            .size(38.dp)
+                            .clip(RoundedCornerShape(19.dp))
+                            .background(Color.White.copy(alpha = 0.2f))
+                            .clickable { showWallpaperSelector = true },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(Icons.Default.Image, contentDescription = "Divar Kağızı", tint = Color.White, modifier = Modifier.size(18.dp))
+                    }
+
+                    Spacer(modifier = Modifier.width(8.dp))
+
                     Box(
                         modifier = Modifier
                             .size(38.dp)
@@ -167,7 +190,6 @@ fun IOSHomeScreen(
 
                     Spacer(modifier = Modifier.width(8.dp))
 
-                    // Gizli Tətbiqlər
                     Box(
                         modifier = Modifier
                             .size(38.dp)
@@ -181,45 +203,73 @@ fun IOSHomeScreen(
                 }
             }
 
-            // Vidcetlər və Tətbiqlər Şəbəkəsi
-            LazyVerticalGrid(
-                columns = GridCells.Fixed(4),
+            HorizontalPager(
+                state = pagerState,
                 modifier = Modifier
                     .weight(1f)
                     .fillMaxWidth()
-                    .padding(horizontal = 8.dp),
-                contentPadding = PaddingValues(top = 4.dp, bottom = 12.dp)
-            ) {
-                // iOS 18 Vidcetlər Zolağı (Premium Nişanlar ilə)
-                item(span = { GridItemSpan(4) }) {
-                    IOSWidgetsRow(
-                        activeBadge = activeBadge,
-                        onBatteryWidgetClick = { showBatteryCustomizer = true },
-                        onChargingDetected = { showChargingAnimation = true }
-                    )
-                }
+            ) { pageIndex ->
+                val pageApps = pages.getOrElse(pageIndex) { emptyList() }
 
-                // Tətbiqlər Şəbəkəsi
-                items(visibleApps, key = { it.packageName }) { app ->
-                    IOSIconItem(
-                        app = app,
-                        isJiggleMode = isJiggleMode,
-                        onClick = {
-                            if (isJiggleMode) selectedAppForEdit = app else appManager.launchApp(app)
-                        },
-                        onLongClick = {
-                            isJiggleMode = true
-                            selectedAppForEdit = app
-                        },
-                        onRemoveClick = {
-                            appManager.setAppHidden(app.packageName, true)
-                            refreshApps()
+                LazyVerticalGrid(
+                    columns = GridCells.Fixed(4),
+                    userScrollEnabled = false,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(horizontal = 8.dp),
+                    contentPadding = PaddingValues(top = 4.dp, bottom = 8.dp)
+                ) {
+                    if (pageIndex == 0) {
+                        item(span = { GridItemSpan(4) }) {
+                            IOSWidgetsRow(
+                                activeBadge = activeBadge,
+                                onBatteryWidgetClick = { showBatteryCustomizer = true },
+                                onChargingDetected = { showChargingAnimation = true }
+                            )
                         }
-                    )
+                    }
+
+                    items(pageApps, key = { it.packageName }) { app ->
+                        IOSIconItem(
+                            app = app,
+                            isJiggleMode = isJiggleMode,
+                            onClick = {
+                                if (isJiggleMode) selectedAppForEdit = app else appManager.launchApp(app)
+                            },
+                            onLongClick = {
+                                isJiggleMode = true
+                                selectedAppForEdit = app
+                            },
+                            onRemoveClick = {
+                                appManager.setAppHidden(app.packageName, true)
+                                refreshApps()
+                            }
+                        )
+                    }
                 }
             }
 
-            // Alt iOS 18 Dock
+            if (pages.size > 1) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 4.dp),
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    repeat(pages.size) { index ->
+                        val isCurrent = pagerState.currentPage == index
+                        Box(
+                            modifier = Modifier
+                                .padding(horizontal = 3.5.dp)
+                                .size(if (isCurrent) 7.5.dp else 5.5.dp)
+                                .clip(CircleShape)
+                                .background(if (isCurrent) Color.White else Color.White.copy(alpha = 0.35f))
+                        )
+                    }
+                }
+            }
+
             if (visibleApps.isNotEmpty()) {
                 IOSDockView(
                     dockApps = visibleApps.take(4),
@@ -232,7 +282,6 @@ fun IOSHomeScreen(
             }
         }
 
-        // Tətbiq Redaktə Menyusu
         selectedAppForEdit?.let { app ->
             EditAppBottomSheet(
                 app = app,
@@ -255,7 +304,6 @@ fun IOSHomeScreen(
             )
         }
 
-        // Gizli Tətbiqlər Qovluğu
         if (showHiddenVault) {
             HiddenAppsVaultDialog(
                 hiddenApps = hiddenApps,
@@ -272,13 +320,11 @@ fun IOSHomeScreen(
             )
         }
 
-        // Control Center
         IOSControlCenter(
             isVisible = showControlCenter,
             onDismiss = { showControlCenter = false }
         )
 
-        // Premium Batareya & Şarj Tənzimləmə Pəncərəsi
         if (showBatteryCustomizer) {
             BatteryCustomizerBottomSheet(
                 currentBadgeId = activeBadge.id,
@@ -299,7 +345,17 @@ fun IOSHomeScreen(
             )
         }
 
-        // Şarj Animasiyası
+        if (showWallpaperSelector) {
+            WallpaperSelectorBottomSheet(
+                currentWallpaperUri = selectedWallpaperUri,
+                onWallpaperSelected = { uri ->
+                    selectedWallpaperUri = uri
+                    prefs.edit().putString("selected_wallpaper_uri", uri).apply()
+                },
+                onDismiss = { showWallpaperSelector = false }
+            )
+        }
+
         if (showChargingAnimation) {
             ChargingAnimationOverlay(
                 batteryLevel = 85,
