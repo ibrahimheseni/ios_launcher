@@ -26,6 +26,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.IOSLauncher">
 
+        <!-- Əsas Ana Ekran -->
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -41,6 +42,7 @@
             </intent-filter>
         </activity>
 
+        <!-- Kilid Ekranında Şarj Animasiyası Pəncərəsi -->
         <activity
             android:name=".ChargingLockActivity"
             android:exported="true"
