@@ -23,9 +23,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
-import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.graphics.asImageBitmap
@@ -40,7 +40,8 @@ import az.diamante.ioslauncher.model.AppModel
 import coil.compose.AsyncImage
 
 /**
- * iOS 18 Squircle İkon Görünüşü (Jiggle Mode və Titrəmə dəstəkli)
+ * VIP iOS 18 Squircle İkon Görünüşü
+ * Ağ kənarlıqsız, tam dolu şüşə parıltısı (specular glass) və hamar kölgə ilə.
  */
 @OptIn(androidx.compose.foundation.ExperimentalFoundationApi::class)
 @Composable
@@ -52,7 +53,6 @@ fun IOSIconItem(
     onRemoveClick: (() -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
-    // iOS Jiggle (titrəmə) sonsuz yellənmə animasiyası
     val infiniteTransition = rememberInfiniteTransition(label = "JiggleTransition")
     val rotation by if (isJiggleMode) {
         infiniteTransition.animateFloat(
@@ -79,14 +79,13 @@ fun IOSIconItem(
             )
     ) {
         Box(contentAlignment = Alignment.TopStart) {
-            // iOS 18 İkon Konteyneri (Squircle: 16dp radius)
+            // VIP Tam Dolu Squircle Konteyneri (Ağ kənarlıqsız!)
             Box(
                 modifier = Modifier
                     .size(62.dp)
-                    .shadow(elevation = 6.dp, shape = RoundedCornerShape(16.dp))
+                    .shadow(elevation = 8.dp, shape = RoundedCornerShape(16.dp))
                     .clip(RoundedCornerShape(16.dp))
-                    .background(Color.White)
-                    .border(0.5.dp, Color.White.copy(alpha = 0.3f), RoundedCornerShape(16.dp)),
+                    .border(0.6.dp, Color.White.copy(alpha = 0.35f), RoundedCornerShape(16.dp)),
                 contentAlignment = Alignment.Center
             ) {
                 if (app.customIconUri != null) {
@@ -109,9 +108,21 @@ fun IOSIconItem(
                         )
                     }
                 }
+
+                // Apple üslublu üst şüşə parıltısı (Specular highlight)
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .fillMaxHeight(0.45f)
+                        .align(Alignment.TopCenter)
+                        .background(
+                            Brush.verticalGradient(
+                                listOf(Color.White.copy(alpha = 0.2f), Color.Transparent)
+                            )
+                        )
+                )
             }
 
-            // Jiggle rejimində sol üst küncdə silmə/gizlətmə nişanı (-)
             if (isJiggleMode && onRemoveClick != null) {
                 Box(
                     modifier = Modifier
@@ -124,7 +135,7 @@ fun IOSIconItem(
                 ) {
                     Icon(
                         Icons.Default.Remove,
-                        contentDescription = "Gizlət",
+                        contentDescription = "Sil / Gizlət",
                         tint = Color.White,
                         modifier = Modifier.size(14.dp)
                     )
@@ -132,9 +143,8 @@ fun IOSIconItem(
             }
         }
 
-        Spacer(modifier = Modifier.height(4.dp))
+        Spacer(modifier = Modifier.height(5.dp))
 
-        // iOS Üslubunda Tətbiq Adı
         Text(
             text = app.displayLabel,
             maxLines = 1,
@@ -145,9 +155,9 @@ fun IOSIconItem(
                 fontSize = 11.5.sp,
                 fontWeight = FontWeight.Medium,
                 shadow = Shadow(
-                    color = Color.Black.copy(alpha = 0.65f),
+                    color = Color.Black.copy(alpha = 0.8f),
                     offset = Offset(0f, 1.5f),
-                    blurRadius = 3f
+                    blurRadius = 4f
                 )
             ),
             modifier = Modifier.width(76.dp)
@@ -159,8 +169,8 @@ private fun drawableToBitmap(drawable: Drawable): Bitmap? {
     if (drawable is BitmapDrawable && drawable.bitmap != null) {
         return drawable.bitmap
     }
-    val width = if (drawable.intrinsicWidth > 0) drawable.intrinsicWidth else 96
-    val height = if (drawable.intrinsicHeight > 0) drawable.intrinsicHeight else 96
+    val width = if (drawable.intrinsicWidth > 0) drawable.intrinsicWidth else 128
+    val height = if (drawable.intrinsicHeight > 0) drawable.intrinsicHeight else 128
     val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
     val canvas = Canvas(bitmap)
     drawable.setBounds(0, 0, canvas.width, canvas.height)
